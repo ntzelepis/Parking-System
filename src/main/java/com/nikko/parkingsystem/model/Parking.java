@@ -24,9 +24,10 @@ public class Parking {
     @OneToMany(mappedBy = "parking", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ParkingZone> zones = new ArrayList<>();
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "price_list_id")
     private PriceList priceList;
+
 
     @OneToMany(mappedBy = "parking", cascade = CascadeType.ALL)
     private List<Payment> payments = new ArrayList<>();

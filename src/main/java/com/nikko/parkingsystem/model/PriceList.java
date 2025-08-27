@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity
 @Table(name = "price_list")
 @Data
@@ -17,8 +19,9 @@ public class PriceList {
 
     private double baseRate;
 
-    @OneToOne(mappedBy = "priceList")
-    private Parking parking;
+    @OneToMany(mappedBy = "priceList")
+    private List<Parking> parkings;
+
 
     public PriceList(double baseRate) {
         this.baseRate = baseRate;

@@ -22,17 +22,17 @@ public class ParkingZoneController {
 
     @PostMapping("/spaces/add")
     public void addSpaces(@RequestBody Map<String, Object> request) {
-        String parkingName = (String) request.get("parkingName");
-        String zoneLetter = (String) request.get("zoneLetter");
+        Long parkingId = Long.valueOf((Integer) request.get("parking_id"));
+        Long zoneId = Long.valueOf((Integer) request.get("zone_id"));
         int count = (Integer) request.get("count");
         String typeStr = (String) request.get("type");
         SpaceType type = SpaceType.valueOf(typeStr.toUpperCase());
-        parkingService.addValidatedSpaceToZone(parkingName, zoneLetter, count, type);
+        parkingService.addValidatedSpaceToZone(parkingId, zoneId, count, type);
     }
 
-    @GetMapping("/{parkingName}/names")
-    public List<String> getZoneNames(@PathVariable String parkingName) {
-        return zoneService.getZoneNamesByParking(parkingName);
+    @GetMapping("/{parking_id}/names")
+    public List<String> getZoneNames(@PathVariable Long parking_id) {
+        return zoneService.getZoneNamesByParkingId(parking_id);
     }
 }
 

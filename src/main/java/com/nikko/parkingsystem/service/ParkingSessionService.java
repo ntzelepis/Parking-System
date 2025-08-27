@@ -1,7 +1,7 @@
 package com.nikko.parkingsystem.service;
 
-
 import com.nikko.parkingsystem.model.*;
+import com.nikko.parkingsystem.dto.SessionSummary;
 import com.nikko.parkingsystem.repo.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,7 +42,7 @@ public class ParkingSessionService {
         Vehicle savedVehicle = vehicleRepository.save(vehicle);
 
         List<ParkingZone> zones = zoneRepository.findByParkingName(parkingName).stream()
-                .sorted(Comparator.comparing(ParkingZone::getId)) // or use getName() if you prefer alphabetical
+                .sorted(Comparator.comparing(ParkingZone::getId))
                 .collect(Collectors.toList());
 
         for (ParkingZone zone : zones) {
@@ -74,12 +74,12 @@ public class ParkingSessionService {
         return Optional.empty();
     }
 
-
     @Transactional
-    public Payment unparkVehicle(String licensePlate) {
-        Vehicle vehicle = vehicleRepository.findByLicensePlate(licensePlate);
-        if (vehicle == null) return null;
+    public Payment unparkVehicle(Long vehicleId) {
+        Optional<Vehicle> vehicleOpt = vehicleRepository.findById(vehicleId);
+        if (vehicleOpt.isEmpty()) return null;
 
+        Vehicle vehicle = vehicleOpt.get();
         ParkingSession session = sessionRepository.findActiveSession(vehicle).orElse(null);
         if (session == null) return null;
 
@@ -87,16 +87,13 @@ public class ParkingSessionService {
         Parking parking = parkingRepository.findByName(space.getParkingName()).orElse(null);
         if (parking == null) return null;
 
-        LocalDateTime end = LocalDateTime.now();
-        session.setEnd(end);
+        session.setEnd(LocalDateTime.now());
         space.setOccupied(false);
 
         sessionRepository.save(session);
         parkingSpaceRepository.save(space);
 
-        Payment payment = paymentService.processPayment(session);
-        System.out.printf("Payment recorded: $%.2f for session ID: %d%n", payment.getAmount(), session.getId());
-        return payment;
+        return paymentService.processPayment(session);
     }
 
 
@@ -107,19 +104,23 @@ public class ParkingSessionService {
 
     @Transactional(readOnly = true)
     public Map<String, Object> getSessionAnalytics(Vehicle vehicle) {
-        List<ParkingSession> sessions = getSessionsByVehicle(vehicle);
+        List<ParkingSession> sessions = sessionRepository.findSessionsWithDetails(vehicle);
 
-        double totalHours = sessions.stream().mapToDouble(ParkingSession::getDurationHours).sum();
-        double average = sessions.isEmpty() ? 0 : totalHours / sessions.size();
-        double totalPaid = sessions.stream()
-                .map(ParkingSession::getPayment)
-                .filter(Objects::nonNull)
-                .mapToDouble(Payment::getAmount)
-                .sum();
-        double maxDuration = sessions.stream().mapToDouble(ParkingSession::getDurationHours).max().orElse(0);
-        double minDuration = sessions.stream().mapToDouble(ParkingSession::getDurationHours).min().orElse(0);
-        String mostUsedZone = sessions.stream()
-                .map(s -> s.getParkingSpace().getZoneName())
+        List<SessionSummary> summaries = sessions.stream()
+                .map(s -> new SessionSummary(
+                        s.getDurationHours(),
+                        s.getPayment() != null ? s.getPayment().getAmount() : 0.0,
+                        s.getParkingSpace() != null ? s.getParkingSpace().getZoneName() : null
+                ))
+                .toList();
+
+        double totalHours = summaries.stream().mapToDouble(SessionSummary::durationHours).sum();
+        double average = summaries.isEmpty() ? 0 : totalHours / summaries.size();
+        double totalPaid = summaries.stream().mapToDouble(SessionSummary::amountPaid).sum();
+        double maxDuration = summaries.stream().mapToDouble(SessionSummary::durationHours).max().orElse(0);
+        double minDuration = summaries.stream().mapToDouble(SessionSummary::durationHours).min().orElse(0);
+        String mostUsedZone = summaries.stream()
+                .map(SessionSummary::zoneName)
                 .filter(Objects::nonNull)
                 .collect(Collectors.groupingBy(z -> z, Collectors.counting()))
                 .entrySet().stream()
@@ -127,14 +128,15 @@ public class ParkingSessionService {
                 .map(Map.Entry::getKey)
                 .orElse("N/A");
 
-        Map<String, Object> analytics = new HashMap<>();
+        Map<String, Object> analytics = new LinkedHashMap<>();
+        analytics.put("sessionCount", summaries.size());
         analytics.put("totalHours", totalHours);
         analytics.put("averageDuration", average);
         analytics.put("totalPaid", totalPaid);
-        analytics.put("sessionCount", sessions.size());
         analytics.put("maxDuration", maxDuration);
         analytics.put("minDuration", minDuration);
         analytics.put("mostUsedZone", mostUsedZone);
+
         return analytics;
     }
 }

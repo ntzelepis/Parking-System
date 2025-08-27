@@ -8,14 +8,13 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 
 public interface ParkingRepository extends JpaRepository<Parking, Long> {
+    Optional<Parking> findByName(String name);
 
     @Query("""
-        SELECT p FROM Parking p
-        LEFT JOIN FETCH p.zones
-        WHERE p.name = :name
-    """)
-    Optional<Parking> findByNameWithZones(@Param("name") String name);
+    SELECT p FROM Parking p
+    LEFT JOIN FETCH p.zones
+    WHERE p.id = :id
+""")
+    Optional<Parking> findByIdWithZones(@Param("id") Long id);
 
-    Optional<Parking> findByName(String name);
 }
-

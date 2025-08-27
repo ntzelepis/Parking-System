@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -12,8 +13,6 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @RequiredArgsConstructor
-@Getter
-@Setter
 public class Vehicle {
 
     @Id
@@ -33,8 +32,7 @@ public class Vehicle {
     @Column(name = "type", nullable = false)
     private VehicleType type;
 
-    @OneToMany(mappedBy = "vehicle", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @Setter(AccessLevel.NONE)
+    @OneToMany(mappedBy = "vehicle", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<ParkingSession> sessions = new HashSet<>();
 
     @ManyToOne
@@ -52,8 +50,6 @@ public class Vehicle {
         this.model = "Unknown";
         this.type = VehicleType.CAR;
     }
-
-
 
     public void startSession(ParkingSpace space, LocalDateTime time) {
         ParkingSession session = new ParkingSession();
@@ -80,5 +76,18 @@ public class Vehicle {
 
     public void clearSessions() {
         sessions.clear();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Vehicle)) return false;
+        Vehicle that = (Vehicle) o;
+        return licensePlate.equals(that.licensePlate);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(licensePlate);
     }
 }

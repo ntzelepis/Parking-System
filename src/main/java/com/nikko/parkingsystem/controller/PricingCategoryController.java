@@ -2,25 +2,35 @@ package com.nikko.parkingsystem.controller;
 
 import com.nikko.parkingsystem.model.Parking;
 import com.nikko.parkingsystem.model.PricingCategory;
+import com.nikko.parkingsystem.dto.CreateParkingRequest;
 import com.nikko.parkingsystem.service.PricingCategoryService;
+import com.nikko.parkingsystem.service.ParkingService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/categories")
+@RequiredArgsConstructor
 public class PricingCategoryController {
 
     private final PricingCategoryService categoryService;
+    private final ParkingService parkingService;
 
-    public PricingCategoryController(PricingCategoryService categoryService) {
-        this.categoryService = categoryService;
+    @PostMapping("/create")
+    public void createParking(@RequestBody @Valid CreateParkingRequest request) {
+        parkingService.createParkingWithZones(
+                request.getName(),
+                request.getZoneCount(),
+                request.getPriceListId()
+        );
     }
 
-    @GetMapping("/{parkingName}")
-    public List<PricingCategory> getCategories(@PathVariable String parkingName) {
-        Parking parking = new Parking();
-        parking.setName(parkingName);
+    @GetMapping("/{parkingId}")
+    public List<PricingCategory> getCategories(@PathVariable Long parkingId) {
+        Parking parking = parkingService.getParkingById(parkingId);
         return categoryService.getCategoriesForParking(parking);
     }
 
@@ -29,16 +39,15 @@ public class PricingCategoryController {
         return categoryService.saveCategory(category);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     public void deleteCategory(@PathVariable Long id) {
         categoryService.deleteCategory(id);
     }
 
-    @GetMapping("/{parkingName}/validate")
-    public boolean validateStructure(@PathVariable String parkingName) {
-        Parking parking = new Parking();
-        parking.setName(parkingName);
-        return categoryService.isValidCategoryStructure(parking, null); // You’ll need to pass a real category
+    @GetMapping("/{parkingId}/validate")
+    public boolean validateStructure(@PathVariable Long parkingId) {
+        Parking parking = parkingService.getParkingById(parkingId);
+        return categoryService.isValidCategoryStructure(parking, null);
     }
-}
 
+}

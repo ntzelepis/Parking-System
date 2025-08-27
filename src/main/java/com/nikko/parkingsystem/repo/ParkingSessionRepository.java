@@ -13,10 +13,14 @@ public interface ParkingSessionRepository extends JpaRepository<ParkingSession, 
 
     List<ParkingSession> findByVehicle(Vehicle vehicle);
 
+    @Query("SELECT s FROM ParkingSession s WHERE s.vehicle = :vehicle AND s.end IS NULL")
+    Optional<ParkingSession> findActiveSession(@Param("vehicle") Vehicle vehicle);
+
     @Query("""
         SELECT s FROM ParkingSession s
-        WHERE s.vehicle = :vehicle AND s.end IS NULL
-        ORDER BY s.start DESC
+        JOIN FETCH s.parkingSpace ps
+        LEFT JOIN FETCH s.payment p
+        WHERE s.vehicle = :vehicle
     """)
-    Optional<ParkingSession> findActiveSession(@Param("vehicle") Vehicle vehicle);
+    List<ParkingSession> findSessionsWithDetails(@Param("vehicle") Vehicle vehicle);
 }
