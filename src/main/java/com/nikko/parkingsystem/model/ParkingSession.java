@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -11,6 +12,8 @@ import java.time.LocalDateTime;
 @Entity
 @Data
 @NoArgsConstructor
+@Getter
+@Setter
 public class ParkingSession {
 
     @Id
@@ -23,7 +26,6 @@ public class ParkingSession {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "parking_space_id")
-    @Getter
     private ParkingSpace parkingSpace;
 
     @Column(name = "start_time", nullable = false)

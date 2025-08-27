@@ -1,8 +1,10 @@
 package com.nikko.parkingsystem.controller;
 
+import com.nikko.parkingsystem.dto.ParkingSummaryDTO;
 import com.nikko.parkingsystem.service.ParkingService;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -16,14 +18,18 @@ public class ParkingController {
     }
 
     @GetMapping("/names")
-    public java.util.List<Map<String, Object>> getAllParkingSummaries() {
+    public List<ParkingSummaryDTO> getAllParkingSummaries() {
         return parkingService.getAllParkingSummaries();
     }
+
 
     @PostMapping("/create")
     public void createParking(@RequestBody Map<String, Object> request) {
         String name = (String) request.get("name");
         int zoneCount = (Integer) request.get("zoneCount");
-        parkingService.createParkingWithZones(name, zoneCount);
+        Long priceListId = Long.valueOf((Integer) request.get("priceListId"));
+        parkingService.createParkingWithZones(name, zoneCount, priceListId);
     }
+
+
 }

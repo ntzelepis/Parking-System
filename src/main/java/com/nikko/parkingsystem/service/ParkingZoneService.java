@@ -17,8 +17,8 @@ public class ParkingZoneService {
         this.parkingRepository = parkingRepository;
     }
 
-    public List<String> getZoneNamesByParking(String parkingName) {
-        Parking parking = parkingRepository.findByNameWithZones(parkingName).orElse(null);
+    public List<String> getZoneNamesByParkingId(Long parkingId) {
+        Parking parking = parkingRepository.findByIdWithZones(parkingId).orElse(null);
         if (parking == null) {
             return List.of();
         }

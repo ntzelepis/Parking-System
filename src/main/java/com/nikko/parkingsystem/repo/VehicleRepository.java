@@ -5,15 +5,17 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Optional;
+
 public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
 
     Vehicle findByLicensePlate(String licensePlate);
+
     @Query("""
     SELECT v FROM Vehicle v
     LEFT JOIN FETCH v.sessions
     WHERE v.licensePlate = :licensePlate
 """)
-    Vehicle findByLicensePlateWithSessions(@Param("licensePlate") String licensePlate);
-
+    Optional<Vehicle> findByLicensePlateWithSessions(@Param("licensePlate") String licensePlate);
 
 }

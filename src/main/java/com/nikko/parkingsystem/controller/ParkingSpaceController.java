@@ -17,24 +17,23 @@ public class ParkingSpaceController {
         this.parkingSpaceRepository = parkingSpaceRepository;
     }
 
-    @GetMapping("/{parkingName}/{zoneName}/occupancy")
-    public String getZoneOccupancy(@PathVariable String parkingName,
-                                   @PathVariable String zoneName) {
-        Long zoneId = parkingSpaceRepository.findByZoneName(zoneName).get(0).getZone().getId();
-        double percentage = spaceService.getZoneOccupancyPercentage(zoneId);
+    @GetMapping("/{parking_id}/{zone_id}/occupancy")
+    public String getZoneOccupancy(@PathVariable Long parking_id,
+                                   @PathVariable Long zone_id) {
+        double percentage = spaceService.getZoneOccupancyPercentage(zone_id);
         return percentage + "%";
     }
 
-    @GetMapping("/{parkingName}/{zoneName}/available/{type}")
-    public String isSpaceTypeAvailable(@PathVariable String parkingName,
-                                       @PathVariable String zoneName,
+    @GetMapping("/{parking_id}/{zone_id}/available/{type}")
+    public String isSpaceTypeAvailable(@PathVariable Long parking_id,
+                                       @PathVariable Long zone_id,
                                        @PathVariable SpaceType type) {
-        return spaceService.isSpaceTypeAvailable(parkingName, zoneName, type);
+        return spaceService.isSpaceTypeAvailable(parking_id, zone_id, type);
     }
 
-    @GetMapping("/{parkingName}/{zoneLetter}/count")
-    public int getZoneSpaceCount(@PathVariable String parkingName,
-                                 @PathVariable String zoneLetter) {
-        return spaceService.getZoneSpaceCount(parkingName, zoneLetter);
+    @GetMapping("/{parking_id}/{zone_id}/count")
+    public int getZoneSpaceCount(@PathVariable Long parking_id,
+                                 @PathVariable Long zone_id) {
+        return spaceService.getZoneSpaceCount(parking_id, zone_id);
     }
 }

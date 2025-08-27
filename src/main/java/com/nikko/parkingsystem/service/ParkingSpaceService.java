@@ -19,13 +19,11 @@ public class ParkingSpaceService {
 
     public double getZoneOccupancyPercentage(Long zoneId) {
         List<ParkingSpace> allSpaces = parkingSpaceRepository.findByZoneId(zoneId);
-
         long occupied = allSpaces.stream()
                 .filter(ParkingSpace::isOccupied)
                 .count();
 
         int total = allSpaces.size();
-
         if (total == 0) return 0.0;
         return Math.round(((double) occupied / total) * 1000.0) / 10.0;
     }
@@ -36,15 +34,13 @@ public class ParkingSpaceService {
                 .count();
     }
 
-    public String isSpaceTypeAvailable(String parkingName, String zoneName, SpaceType type) {
-        List<ParkingSpace> availableSpaces = parkingSpaceRepository.findByParkingName(parkingName).stream()
-                .filter(space -> space.getZoneName() != null && space.getZoneName().equals(zoneName))
+    public String isSpaceTypeAvailable(Long parkingId, Long zoneId, SpaceType type) {
+        List<ParkingSpace> availableSpaces = parkingSpaceRepository.findByZoneId(zoneId).stream()
                 .filter(space -> space.getType() != null && space.getType().equals(type))
                 .filter(space -> !space.isOccupied())
                 .collect(Collectors.toList());
 
         int count = availableSpaces.size();
-
         if (count > 0) {
             return "There are " + count + " available spaces of " + type + " type.";
         } else {
@@ -52,9 +48,8 @@ public class ParkingSpaceService {
         }
     }
 
-    public int getZoneSpaceCount(String parkingName, String zoneLetter) {
-        String normalizedZoneName = "Zone " + zoneLetter.toUpperCase();
-        return parkingSpaceRepository.countByParkingNameAndZoneName(parkingName, normalizedZoneName);
+    public int getZoneSpaceCount(Long parkingId, Long zoneId) {
+        return parkingSpaceRepository.countByZoneId(zoneId);
     }
 
     public int getOccupiedSpaceCount(String parkingName, String zoneName) {

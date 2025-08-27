@@ -8,7 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class VehicleService {
@@ -20,7 +22,6 @@ public class VehicleService {
         this.vehicleRepository = vehicleRepository;
     }
 
-
     public Vehicle findVehicle(String licensePlate) {
         return vehicleRepository.findByLicensePlate(licensePlate);
     }
@@ -30,8 +31,6 @@ public class VehicleService {
         Vehicle vehicle = new Vehicle(resolvedModel, licensePlate, type);
         return vehicleRepository.save(vehicle);
     }
-
-
 
     public Vehicle getVehicle(String licensePlate) {
         return vehicleRepository.findByLicensePlate(licensePlate);
@@ -43,12 +42,30 @@ public class VehicleService {
 
     @Transactional(readOnly = true)
     public Vehicle getVehicleWithSessions(String licensePlate) {
-        return vehicleRepository.findByLicensePlateWithSessions(licensePlate);
+        return vehicleRepository.findByLicensePlateWithSessions(licensePlate)
+                .orElse(null);
     }
 
     @Transactional(readOnly = true)
     public List<ParkingSession> getSessionsByLicensePlate(String licensePlate) {
         Vehicle vehicle = getVehicleWithSessions(licensePlate);
-        return List.copyOf(vehicle.getSessions());
+        return (vehicle != null) ? List.copyOf(vehicle.getSessions()) : List.of();
     }
+
+    @Transactional(readOnly = true)
+    public ParkingSession getLatestSession(String licensePlate) {
+        Vehicle vehicle = getVehicleWithSessions(licensePlate);
+        if (vehicle == null || vehicle.getSessions().isEmpty()) {
+            return null;
+        }
+        return vehicle.getSessions().stream()
+                .sorted(Comparator.comparing(ParkingSession::getStart).reversed())
+                .findFirst()
+                .orElse(null);
+    }
+
+    public Optional<Vehicle> findById(Long vehicleId) {
+        return vehicleRepository.findById(vehicleId);
+    }
+
 }

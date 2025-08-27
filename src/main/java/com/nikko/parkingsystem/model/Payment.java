@@ -12,19 +12,19 @@ public class Payment {
     @Column(name = "amount", nullable = false)
     private double amount;
 
-    @ManyToOne
-    @JoinColumn(name = "vehicle_id", nullable = false)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "vehicle_id")
     private Vehicle vehicle;
 
-    @ManyToOne
-    @JoinColumn(name = "parking_space_id", nullable = false)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "parking_space_id")
     private ParkingSpace parkingSpace;
 
-    @OneToOne
-    @JoinColumn(name = "session_id", nullable = false)
+    @OneToOne(optional = false)
+    @JoinColumn(name = "session_id")
     private ParkingSession session;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JoinColumn(name = "parking_id")
     private Parking parking;
 
